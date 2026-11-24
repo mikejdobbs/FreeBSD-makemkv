@@ -28,15 +28,11 @@ FDK_AAC_LICENSE_DISTFILES=	${DISTFL_FDKAAC}
 
 ONLY_FOR_ARCHS=	aarch64 amd64 i386
 USES=	gmake linux:rl9 pkgconfig
-BUILD_DEPENDS=	patchelf:sysutils/patchelf \
-		/compat/linux/usr/lib64/libexpat.so.1:textproc/linux-rl9-expat \
-		/compat/linux/usr/lib64/libatomic.so.1:devel/linux-rl9-devtools
+BUILD_DEPENDS=	patchelf:sysutils/patchelf 
 
 USE_CSTD=	c11
 USE_CXXSTD=	c++11
-USE_LINUX=	base expat \
-		devtools:build expat-devel:build openssl-devel:build \
-		zlib-devel:build
+USE_LINUX=	base expat devtools:build
 
 BUILD_DEPENDS_amd64=	nasm:devel/nasm
 BUILD_DEPENDS_i386=	nasm:devel/nasm
@@ -68,20 +64,25 @@ TARGET_ORDER_OVERRIDE=	290:pre-configure-FDK_AAC-on
 
 CC=		${LINUXBASE}/bin/gcc
 CXX=		${LINUXBASE}/bin/g++
-CPPFLAGS+=	-D_linux_ -DFORCE_OPENSSL_NO_EC -I/compat/linux/usr/include
+CPPFLAGS+=	-D_linux_ -DFORCE_OPENSSL_NO_EC -I${LINUXBASE}/usr/include
 USE_LDCONFIG=	${PREFIX}/lib/makemkv
 PATCHELF_CMD?=	${LOCALBASE}/bin/patchelf
 LINUXSYSROOT=	${WRKDIR}/gnuroot
+LINUX_STUBDIR=	${WRKDIR}/libstubs
+LINUX_LIBDIR=	${LINUXBASE}/usr/${ARCH:Mi386:S/i386/lib/:C/^$/lib64/}
++LDFLAGS+=	-L${LINUX_STUBDIR} -L${LINUX_LIBDIR}
 HAS_CONFIGURE=	yes
-CONFIGURE_ARGS=	--prefix=${PREFIX} --disable-gui --libdir=${PREFIX}/lib/makemkv LDFLAGS="-L/compat/linux/usr/lib64 "
-CONFIGURE_ENV=	PKG_CONFIG_PATH=${LINUXSYSROOT}/lib/pkgconfig
+CONFIGURE_ARGS=	--prefix=${PREFIX} --disable-gui --libdir=${PREFIX}/lib/makemkv \
+		LDFLAGS="-L${LINUX_STUBDIR} -L${LINUX_LIBDIR}"
+CONFIGURE_ENV=	PKG_CONFIG_PATH=${LINUXSYSROOT}/lib/pkgconfig 
 MAKE_ARGS=	CFLAGS="${CXXFLAGS} ${CPPFLAGS} -std=c11"
 
 FFMPEG_ARCH=		${ARCH:Maarch64:S/^$/x86/}
 FFMPEG_CONFIGURE_ARGS=	--prefix=${LINUXSYSROOT} --pkg-config=pkg-config \
 			--disable-shared --enable-static --enable-pic \
 			--target-os=linux --cc=${CC} \
-			${"${PORT_OPTIONS:MFDK_AAC}":?--enable-libfdk-aac:} --disable-doc
+			${"${PORT_OPTIONS:MFDK_AAC}":?--enable-libfdk-aac:} --disable-doc \
+			--extra-ldflags="-L${LINUX_STUBDIR} -L${LINUX_LIBDIR}"
 FFMPEG_CONFIGURE_ENV=	${CONFIGURE_ENV} CFLAGS="${CPPFLAGS} ${CFLAGS}"
 FFMPEG_MAKE_ARGS=	V=1 ARCH=${FFMPEG_ARCH}
 FFMPEG_INSTALL_TARGET=	${ALL_TARGET} ${INSTALL_TARGET}
@@ -107,10 +108,11 @@ pre-configure-FDK_AAC-on:
 pre-configure:
 		# Build-time only: unversioned linker stubs for configure probes.
 		# linux-rl9-* packages omit these symlinks; not needed at runtime.
-		${LN} -sf ${LINUXBASE}/usr/lib64/libz.so.1 ${LINUXBASE}/usr/lib64/libz.so
-		${LN} -sf ${LINUXBASE}/usr/lib64/libssl.so.3 ${LINUXBASE}/usr/lib64/libssl.so
-		${LN} -sf ${LINUXBASE}/usr/lib64/libcrypto.so.3 ${LINUXBASE}/usr/lib64/libcrypto.so
-		${LN} -sf ${LINUXBASE}/usr/lib64/libexpat.so.1 ${LINUXBASE}/usr/lib64/libexpat.so
+		${MKDIR} ${LINUX_STUBDIR}
+		${LN} -sf ${LINUX_LIBDIR}/libz.so.1 ${LINUX_STUBDIR}/libz.so
+		${LN} -sf ${LINUX_LIBDIR}/libssl.so.3 ${LINUX_STUBDIR}/libssl.so
+		${LN} -sf ${LINUX_LIBDIR}/libcrypto.so.3 ${LINUX_STUBDIR}/libcrypto.so
+		${LN} -sf ${LINUX_LIBDIR}/libexpat.so.1 ${LINUX_STUBDIR}/libexpat.so
 		cd ${WRKSRC_ffmpeg}; \
 		${FFMPEG_CONFIGURE_ENV} ./configure ${FFMPEG_CONFIGURE_ARGS}; \
 		${MAKE_ENV} ${MAKE_CMD} ${_MAKE_JOBS} \
