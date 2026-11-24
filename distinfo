@@ -1,7 +1,7 @@
-TIMESTAMP = 1782604603
-SHA256 (makemkv-oss-1.18.4.tar.gz) = 8590063648d42ec2a958b74573d7022f0f4c334e4e4fe7dd53b70c6e748ba453
-SIZE (makemkv-oss-1.18.4.tar.gz) = 6638381
-SHA256 (makemkv-bin-1.18.4.tar.gz) = cee56de0baa5531abed16bd862742d308d772b4ab4dae16ee865bf74f04a1608
-SIZE (makemkv-bin-1.18.4.tar.gz) = 18803132
+TIMESTAMP = 1795487709
+SHA256 (makemkv-oss-2.0.0.tar.gz) = 435316b2d219eb48c880526557addd076b5f5e6de5171424c7651f9cac95b161
+SIZE (makemkv-oss-2.0.0.tar.gz) = 6639445
+SHA256 (makemkv-bin-2.0.0.tar.gz) = f1265e74875a186efdfbbbec7459a64e969033515e53cbc4d805f0a374f0a124
+SIZE (makemkv-bin-2.0.0.tar.gz) = 18926130
 SHA256 (ffmpeg-8.1.2.tar.xz) = 464beb5e7bf0c311e68b45ae2f04e9cc2af88851abb4082231742a74d97b524c
 SIZE (ffmpeg-8.1.2.tar.xz) = 11710924

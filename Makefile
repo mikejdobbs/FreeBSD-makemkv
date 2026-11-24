@@ -1,5 +1,5 @@
 PORTNAME=	makemkv
-DISTVERSION=	1.18.4
+DISTVERSION=	2.0.0
 CATEGORIES=	multimedia
 MASTER_SITES=	http://www.makemkv.com/download/:makemkv \
 		http://www.makemkv.com/download/old/:makemkv \
@@ -8,7 +8,7 @@ MASTER_SITES=	http://www.makemkv.com/download/:makemkv \
 DISTFILES=	${DISTFL_MAKEMKV:S/$/:makemkv/} \
 		${DISTFL_FFMPEG:S/$/:ffmpeg/}
 
-MAINTAINER=	ports@FreeBSD.org
+MAINTAINER=	mike.j.dobbs@gmail.com
 COMMENT=	Video converter reading from DVD and Bluray
 WWW=		https://www.makemkv.com
 
