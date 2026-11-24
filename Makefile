@@ -1,8 +1,8 @@
 PORTNAME=	makemkv
 DISTVERSION=	2.0.0
 CATEGORIES=	multimedia
-MASTER_SITES=	http://www.makemkv.com/download/:makemkv \
-		http://www.makemkv.com/download/old/:makemkv \
+MASTER_SITES=	https://www.makemkv.com/download/:makemkv \
+		https://www.makemkv.com/download/old/:makemkv \
 		SF/opencore-amr/fdk-aac/:fdkaac \
 		https://ffmpeg.org/releases/:ffmpeg
 DISTFILES=	${DISTFL_MAKEMKV:S/$/:makemkv/} \
@@ -20,22 +20,15 @@ LICENSE_PERMS_MAKEMKV=	dist-mirror pkg-mirror auto-accept
 LICENSE_DISTFILES_LGPL21+=	${DISTFL_FFMPEG}
 LICENSE_DISTFILES_MAKEMKV=	${DISTFL_MAKEMKV}
 
-FDK_AAC_LICENSE=		FDK_AAC
-FDK_AAC_LICENSE_NAME=		The FDK AAC License
-FDK_AAC_LICENSE_FILE=		${WRKSRC_fdkaac}/NOTICE
-FDK_AAC_LICENSE_PERMS=		auto-accept
-FDK_AAC_LICENSE_DISTFILES=	${DISTFL_FDKAAC}
-
 ONLY_FOR_ARCHS=	aarch64 amd64 i386
-USES=	gmake linux:rl9 pkgconfig
-BUILD_DEPENDS=	patchelf:sysutils/patchelf 
 
+BUILD_DEPENDS=	patchelf:sysutils/patchelf
+
+USES=	gmake linux:rl9 pkgconfig ssl
 USE_CSTD=	c11
 USE_CXXSTD=	c++11
 USE_LINUX=	base expat devtools:build
-
-BUILD_DEPENDS_amd64=	nasm:devel/nasm
-BUILD_DEPENDS_i386=	nasm:devel/nasm
+USE_LDCONFIG=	${PREFIX}/lib/makemkv
 
 WRKSRC=		${WRKDIR}/makemkv-oss-${DISTVERSION}
 WRKSRC_bin=	${WRKDIR}/makemkv-bin-${DISTVERSION}
@@ -62,19 +55,24 @@ FDK_AAC_DESC=		Support AAC via statically linked fdk-aac
 FDK_AAC_DISTFILES=	${DISTFL_FDKAAC:S/$/:fdkaac/}
 TARGET_ORDER_OVERRIDE=	290:pre-configure-FDK_AAC-on
 
+FDK_AAC_LICENSE=		FDK_AAC
+FDK_AAC_LICENSE_NAME=		The FDK AAC License
+FDK_AAC_LICENSE_FILE=		${WRKSRC_fdkaac}/NOTICE
+FDK_AAC_LICENSE_PERMS=		auto-accept
+FDK_AAC_LICENSE_DISTFILES=	${DISTFL_FDKAAC}
+
 CC=		${LINUXBASE}/bin/gcc
 CXX=		${LINUXBASE}/bin/g++
 CPPFLAGS+=	-D_linux_ -DFORCE_OPENSSL_NO_EC -I${LINUXBASE}/usr/include
-USE_LDCONFIG=	${PREFIX}/lib/makemkv
 PATCHELF_CMD?=	${LOCALBASE}/bin/patchelf
 LINUXSYSROOT=	${WRKDIR}/gnuroot
 LINUX_STUBDIR=	${WRKDIR}/libstubs
 LINUX_LIBDIR=	${LINUXBASE}/usr/${ARCH:Mi386:S/i386/lib/:C/^$/lib64/}
-+LDFLAGS+=	-L${LINUX_STUBDIR} -L${LINUX_LIBDIR}
+#+LDFLAGS+=	-L${LINUX_STUBDIR} -L${LINUX_LIBDIR}
 HAS_CONFIGURE=	yes
 CONFIGURE_ARGS=	--prefix=${PREFIX} --disable-gui --libdir=${PREFIX}/lib/makemkv \
 		LDFLAGS="-L${LINUX_STUBDIR} -L${LINUX_LIBDIR}"
-CONFIGURE_ENV=	PKG_CONFIG_PATH=${LINUXSYSROOT}/lib/pkgconfig 
+CONFIGURE_ENV=	PKG_CONFIG_PATH=${LINUXSYSROOT}/lib/pkgconfig
 MAKE_ARGS=	CFLAGS="${CXXFLAGS} ${CPPFLAGS} -std=c11"
 
 FFMPEG_ARCH=		${ARCH:Maarch64:S/^$/x86/}
@@ -141,4 +139,10 @@ post-install-EXAMPLES-on:
 		${INSTALL_DATA} ${FILESDIR}/update-makemkv-key.sh \
 			${STAGEDIR}${EXAMPLESDIR}
 
-.include <bsd.port.mk>
+.include <bsd.port.pre.mk>
+
+.if ${ARCH} == amd64 || ${ARCH} == i386
+BUILD_DEPENDS+=	nasm:devel/nasm
+.endif
+
+.include <bsd.port.post.mk>
