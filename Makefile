@@ -68,7 +68,6 @@ PATCHELF_CMD?=	${LOCALBASE}/bin/patchelf
 LINUXSYSROOT=	${WRKDIR}/gnuroot
 LINUX_STUBDIR=	${WRKDIR}/libstubs
 LINUX_LIBDIR=	${LINUXBASE}/usr/${ARCH:Mi386:S/i386/lib/:C/^$/lib64/}
-#+LDFLAGS+=	-L${LINUX_STUBDIR} -L${LINUX_LIBDIR}
 HAS_CONFIGURE=	yes
 CONFIGURE_ARGS=	--prefix=${PREFIX} --disable-gui --libdir=${PREFIX}/lib/makemkv \
 		LDFLAGS="-L${LINUX_STUBDIR} -L${LINUX_LIBDIR}"
